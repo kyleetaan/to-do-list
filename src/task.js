@@ -10,7 +10,7 @@ function createTask(title, desc, priority, date, uniqid) {
     if(uniqid){
         const stringObj = JSON.stringify(obj);
         localStorage.setItem(uniqid, stringObj);
-        return uniqid;
+        return;
     }else {
         const unique = 'id' + Date.now(); //set unique
         const stringObj = JSON.stringify(obj);
@@ -19,5 +19,8 @@ function createTask(title, desc, priority, date, uniqid) {
     }
 }
 
+function deleteTask(uniqid){
+    localStorage.removeItem(uniqid);
+}
 
-export default createTask
+export  {createTask,deleteTask}

@@ -1,4 +1,4 @@
-import createTask from "./task";
+import { createTask, deleteTask } from "./task";
 
 function createHeader() {
     const header = document.createElement('div');
@@ -69,14 +69,19 @@ function createBoard(){
     const board = document.createElement('div');
     board.id = "board";
 
-    const taskAddButton = document.createElement('i');
-    taskAddButton.id = "add-task";
-    taskAddButton.className = "las la-plus-circle";
-    taskAddButton.addEventListener('click', showModal);
+    const taskAddButton = createAddButton();
 
     board.appendChild(taskAddButton);
 
     return board;
+}
+
+function createAddButton(){
+    const taskAddButton = document.createElement('i');
+    taskAddButton.id = "add-task";
+    taskAddButton.className = "las la-plus-circle";
+    taskAddButton.addEventListener('click', showModal);
+    return taskAddButton;
 }
 
 function createMain() {
@@ -223,17 +228,28 @@ function hideModal() {
     document.getElementById('due-date').value = "";
 }
 
-function taskCreation() {
+function taskCreation() { // function where you add tasks
+
     //select each element then pass value
     const title = document.getElementById('task-name').value;
     const desc = document.getElementById('task-description').value;
     const prio = document.querySelector('input[name="priority"]:checked').value;
     const date = document.getElementById('due-date').value;
 
-    const uniqid = createTask(title, desc, prio, date);
-    // create dom here for task
-    // append to board
-    const taskDiv = createTaskDisplay(title, desc, prio, date, uniqid);
+    
+    if(localStorage.getItem('edit')){  // if edit
+        const uniqid = localStorage.getItem('edit');
+        console.log("here!")
+        localStorage.removeItem('edit');
+        createTask(title, desc, prio, date, uniqid);
+        taskDisplay();
+    } else {
+        const uniqid = createTask(title, desc, prio, date);
+
+        const taskDiv = createTaskDisplay(title, desc, prio, date, uniqid);
+    }
+
+    
     
     hideModal();
 }
@@ -257,10 +273,14 @@ function createTaskDisplay(title, desc, prio, date, uniqid){
     const dueDate = document.createElement('input');
     dueDate.type = "date";
     dueDate.value = date;
+
     const edit = document.createElement('i');
     edit.className = "las la-edit";
+    edit.addEventListener('click', editTask);
+
     const del = document.createElement('i');
     del.className = "las la-trash";
+    del.addEventListener('click', deleteTaskElement);
 
     const descriptionDiv = document.createElement('div');
     descriptionDiv.className = 'task-description';
@@ -303,7 +323,8 @@ function showDescription() {
 
 function taskDisplay() {
     const board = document.getElementById('board');
-    
+    board.textContent = "";
+    board.appendChild(createAddButton());
 
     const keys = Object.keys(localStorage);
 
@@ -314,7 +335,41 @@ function taskDisplay() {
         createTaskDisplay(tempObj.title, tempObj.description, tempObj.priority, tempObj.date, keys[i])
     }
 
+    
+
 }
 
+function editTask() {
+    showModal();
+    
+    const parentTaskNode = this.parentNode.parentNode;
+    const uniqid = parentTaskNode.id;
+    const objectToEdit = JSON.parse(localStorage.getItem(uniqid));
+    const title = objectToEdit.title;
+    const desc = objectToEdit.description;
+    const priority = objectToEdit.priority;
+    const date = objectToEdit.date;
+
+    //set value here
+    document.getElementById('task-name').value = title;
+    document.getElementById('task-description').value = desc;
+    if(priority === 'low'){
+        document.querySelectorAll('input[name="priority"]')[0].checked = true;
+    } else if(priority === 'medium') {
+        document.querySelectorAll('input[name="priority"]')[1].checked = true;
+    } else if(priority === 'high') {
+        document.querySelectorAll('input[name="priority"]')[2].checked = true;
+    }
+    
+    document.getElementById('due-date').value = date;
+
+    localStorage.setItem('edit', uniqid);
+}
+
+function deleteTaskElement() {
+    const task = this.parentNode.parentNode;
+    deleteTask(task.id);
+    task.remove();
+}
 
 export {createWebsite, taskDisplay};
