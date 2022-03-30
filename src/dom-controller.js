@@ -1,4 +1,4 @@
-import { createTask, deleteTask } from "./task";
+import { createTask, deleteTask, returnTodayTask, returnWeekTask } from "./task";
 
 function createHeader() {
     const header = document.createElement('div');
@@ -17,10 +17,11 @@ function createTabs(){
     const taskIcon = document.createElement('i');
     taskIcon.className = "las la-tasks";
     const task = document.createElement('div');
-    task.id = "tasks";
+    taskNavContainer.id = "tasks";
     task.textContent = "Tasks";
     taskNavContainer.appendChild(taskIcon);
     taskNavContainer.appendChild(task);
+    taskNavContainer.addEventListener('click', taskDisplay);
 
     // today
     const todayNavContainer = document.createElement('div');
@@ -28,10 +29,12 @@ function createTabs(){
     const todayIcon = document.createElement('i');
     todayIcon.className = "las la-tasks";
     const today = document.createElement('div');
-    today.id = "today";
+    todayNavContainer.id = "today";
     today.textContent = "Today";
     todayNavContainer.appendChild(todayIcon);
     todayNavContainer.appendChild(today);
+    todayNavContainer.addEventListener('click', filteredTaskDisplay)
+
 
     // week
     const weekNavContainer = document.createElement('div');
@@ -39,28 +42,29 @@ function createTabs(){
     const weekIcon = document.createElement('i');
     weekIcon.className = "las la-tasks";
     const week = document.createElement('div');
-    week.id = "tasks";
-    week.textContent = "Tasks";
+    weekNavContainer.id = "week";
+    week.textContent = "Week";
     weekNavContainer.appendChild(weekIcon);
     weekNavContainer.appendChild(week);
+    weekNavContainer.addEventListener('click', filteredTaskDisplay)
 
-    // project
-    const projContainer = document.createElement('div');
-    const projBar = document.createElement('div');
-    const projectPara = document.createElement('p');
-    projectPara.textContent = "PROJECTS"
-    const projectAddButton = document.createElement('i');
-    projectAddButton.className = "las la-plus-circle";
-    projBar.appendChild(projectPara);
-    projBar.appendChild(projectAddButton);
-    const projectNames = document.createElement('div');
-    projContainer.appendChild(projBar);
-    projContainer.appendChild(projectNames);
+    // // project
+    // const projContainer = document.createElement('div');
+    // const projBar = document.createElement('div');
+    // const projectPara = document.createElement('p');
+    // projectPara.textContent = "PROJECTS"
+    // const projectAddButton = document.createElement('i');
+    // projectAddButton.className = "las la-plus-circle";
+    // projBar.appendChild(projectPara);
+    // projBar.appendChild(projectAddButton);
+    // const projectNames = document.createElement('div');
+    // projContainer.appendChild(projBar);
+    // projContainer.appendChild(projectNames);
 
     tabs.appendChild(taskNavContainer);
     tabs.appendChild(todayNavContainer);
     tabs.appendChild(weekNavContainer);
-    tabs.appendChild(projContainer);
+    // tabs.appendChild(projContainer);
 
     return tabs;
 }
@@ -176,6 +180,7 @@ function createModal(){
 
     const buttonCont = document.createElement('div');
     buttonCont.id = "button-container";
+
     const acceptButton = document.createElement('button');
     acceptButton.id = "accept";
     acceptButton.className = "button-modal";
@@ -239,7 +244,6 @@ function taskCreation() { // function where you add tasks
     
     if(localStorage.getItem('edit')){  // if edit
         const uniqid = localStorage.getItem('edit');
-        console.log("here!")
         localStorage.removeItem('edit');
         createTask(title, desc, prio, date, uniqid);
         taskDisplay();
@@ -334,9 +338,33 @@ function taskDisplay() {
         const tempObj = JSON.parse(stringObj);
         createTaskDisplay(tempObj.title, tempObj.description, tempObj.priority, tempObj.date, keys[i])
     }
+}
 
-    
+function filteredTaskDisplay(){
+    const board = document.getElementById('board');
+    board.textContent = "";
+    board.appendChild(createAddButton());
+    let arr;
 
+    if(this.id === "today"){
+        //display task for today
+        arr = returnTodayTask();
+        for(let i = 0; i < arr.length; i++){
+            // get key, store to object, parse then pass to createtaskdisplay
+            const stringObj = localStorage.getItem(arr[i]);
+            const tempObj = JSON.parse(stringObj);
+            createTaskDisplay(tempObj.title, tempObj.description, tempObj.priority, tempObj.date, arr[i])
+        }
+    } else if(this.id === "week"){
+        //display task for this week
+        arr = returnWeekTask();
+        for(let i = 0; i < arr.length; i++){
+            // get key, store to object, parse then pass to createtaskdisplay
+            const stringObj = localStorage.getItem(arr[i]);
+            const tempObj = JSON.parse(stringObj);
+            createTaskDisplay(tempObj.title, tempObj.description, tempObj.priority, tempObj.date, arr[i])
+        }
+    }
 }
 
 function editTask() {

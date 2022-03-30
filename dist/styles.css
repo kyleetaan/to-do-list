@@ -76,6 +76,11 @@ body {
     text-align: center;
 }
 
+.navs:hover {
+    cursor: pointer;
+    background-color: rgb(75, 72, 72);
+}
+
 /* projects */
 #project-container {
     display: flex;
